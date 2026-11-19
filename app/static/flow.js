@@ -1,0 +1,7 @@
+'use strict';
+const flow={working:false};const notice=document.querySelector('#notice');
+async function calculate(input){if(flow.working)return;flow.working=true;notice.textContent='正在重建观测约束…';try{const r=await fetch('/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});const d=await r.json();if(!r.ok)throw Error(d.message);location.reload();}catch(e){notice.textContent=e.message+'，请修改观测';}finally{flow.working=false;}}
+document.querySelector('#refresh').addEventListener('click',()=>calculate({sample:'dirty.csv'}));
+const observation=document.querySelector('#observation-form');if(observation)observation.addEventListener('submit',e=>{e.preventDefault();const f=new FormData(observation);const csv=f.get('csv');calculate(csv?{csv}:{sample:f.get('sample')});});
+const printer=document.querySelector('#print-report');if(printer)printer.addEventListener('click',()=>print());
+const approve=document.querySelector('#approve');if(approve)approve.addEventListener('click',async()=>{try{const r=await fetch('/api/runs/'+approve.dataset.id+'/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:Number(approve.dataset.rev),decision:'通过'})});const d=await r.json();if(!r.ok)throw Error(d.message);approve.dataset.rev=d.review_version;notice.textContent='已通过复核 / V'+d.review_version;}catch(e){notice.textContent=e.message;}});
