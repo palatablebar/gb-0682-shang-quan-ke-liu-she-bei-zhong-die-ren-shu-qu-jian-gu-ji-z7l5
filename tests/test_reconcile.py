@@ -12,7 +12,14 @@ def test_broken_count_detected(state):
     s=deepcopy(state);s['input_count']+=1;assert balance(s)['balanced'] is False
 def test_clean_count():
     s=run(load('clean.csv'),{});assert s['reconcile']['balanced'] and s['reconcile']['isolated']==0
+def test_clean_count():
+    s=run(load('clean.csv'),{});assert s['reconcile']['balanced'] and s['reconcile']['isolated']==0
+    assert s['reconcile']['unit']=='logical_record'
 def test_business_has_totals(state):
     assert state['reconcile']['business'] and 'total' in state['reconcile']['business']
 def test_no_evidence_lost(state):
     assert all(r['line']>=2 and r['code'] for r in state['quarantine'])
+def test_unit_is_logical_record_with_physical_span(state):
+    r=state['reconcile']
+    assert r['unit']=='logical_record' and r['physical_count']==93
+    assert all(q['line_start']<=q['line_end'] and q['source_text'] for q in state['quarantine'])

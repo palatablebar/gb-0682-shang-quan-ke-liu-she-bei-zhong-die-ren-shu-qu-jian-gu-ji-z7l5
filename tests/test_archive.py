@@ -1,6 +1,6 @@
 import csv,io
 from app import store
-from app.modules.m7_archive.export_out import bundle,checksum
+from app.modules.m7_archive.export_out import bundle,checksum,quarantine_rows
 from app.workflow import load,run
 from app.errors import DomainError
 import pytest
@@ -8,7 +8,12 @@ import pytest
 def test_export_rows(state):
     rows=list(csv.reader(io.StringIO(bundle(state).lstrip('\ufeff'))));assert rows[0][0]=='记录类型' and rows[1][0]=='运行清单'
 def test_export_quarantine(state):
-    assert bundle(state).count('隔离')==len(state['quarantine'])
+    assert len(quarantine_rows(state))==len(state['quarantine'])
+def test_export_quarantine_span_and_source(state):
+    # 每条隔离逻辑记录都带物理行区间与来源原文
+    rows=quarantine_rows(state)
+    for exported,q in zip(rows,state['quarantine']):
+        assert exported[2] and exported[6]==q['source_text']
 def test_checksum_stable(state):
     assert checksum(state)==state['archive']['sha256'] and len(checksum(state))==64
 def test_archive_ready(state):

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from app.errors import DomainError
+from app.quarantine import entry
 
 def model(observations):
     zones={r['left']:r['count'] for r in observations if r['kind']=='zone'}
@@ -25,5 +26,5 @@ def apply(state):
         except DomainError as e:
             bad_buckets.add(bucket)
             for r in state['rows']:
-                if r['bucket']==bucket:state['quarantine'].append({'line':r['_line'],'id':r['id'],'code':e.code,'raw':r['_raw']})
+                if r['bucket']==bucket:state['quarantine'].append(entry(r,e.code))
     state['rows']=[r for r in state['rows'] if r['bucket'] not in bad_buckets];state['models']=result;return state

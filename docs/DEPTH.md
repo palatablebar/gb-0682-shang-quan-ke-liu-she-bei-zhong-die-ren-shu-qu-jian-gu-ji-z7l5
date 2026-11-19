@@ -20,7 +20,7 @@
 |---|---|---|---|---|---|
 | TRAP-01 | GB18030中文 | 固定UTF-8失败 | 按编码链回退 | `app/modules/m1_ingest/decode.py` | `tests/test_ingest.py::test_legacy_encoding` |
 | TRAP-02 | 表头BOM | 首列键失配 | 去除BOM | `app/modules/m1_ingest/decode.py` | `tests/test_ingest.py::test_bom` |
-| TRAP-03 | 引号内换行 | 分行误计 | csv逻辑记录 | `app/modules/m1_ingest/reader.py` | `tests/test_ingest.py::test_preserves_multiline_note` |
+| TRAP-03 | 引号内换行 | 分行误计 | csv逻辑记录；记录物理行起止区间与原文切片，计数以逻辑记录为单位 | `app/modules/m1_ingest/reader.py` | `tests/test_ingest.py::test_preserves_multiline_note`、`tests/test_logical_unit.py` |
 | TRAP-05 | 列数错位 | 静默补列 | WIDTH隔离 | `app/modules/m1_ingest/reader.py` | `tests/test_ingest.py::test_width_isolation` |
 | TRAP-06 | 全角千分位 | float失败 | NFKC与Decimal | `app/modules/m2_mapping/coerce.py` | `tests/test_mapping.py::test_thousands` |
 | TRAP-07 | 空值哨兵 | 空值当零 | MISSING隔离 | `app/modules/m2_mapping/coerce.py` | `tests/test_mapping.py::test_missing_numeric` |
@@ -34,7 +34,7 @@
 
 ## 对账规则
 
-输入行数=采纳+隔离+空行+重复表头+完全重复；业务总数与计算证据独立求和。隔离行保留来源行、ID、原因码与原值。
+输入行数=采纳+隔离+空行+重复表头+完全重复，等式两侧均为逻辑记录数；业务总数与计算证据独立求和。隔离条目保留来源行起止（`line_start`/`line_end`）、结束行 `line`、ID、原因码、原值 `raw` 与来源原文 `source_text`；横跨多物理行的坏记录在异常清单中只计一条逻辑记录，来源范围标注为“起始-结束”物理行。归档CSV新增“来源行(物理行)”与“来源原文”两列。
 
 ## 已知不覆盖
 

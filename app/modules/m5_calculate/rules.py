@@ -1,4 +1,5 @@
 from app.errors import DomainError
+from app.quarantine import entry
 
 def bounds(model):
     zones=model['zones'];keys=sorted(zones);pairs=model['pairs'];values=[zones[k] for k in keys]
@@ -21,6 +22,6 @@ def apply(state):
         except DomainError as e:
             bad.add(item['bucket'])
             for r in state['rows']:
-                if r['bucket']==item['bucket']:state['quarantine'].append({'line':r['_line'],'id':r['id'],'code':e.code,'raw':r['_raw']})
+                if r['bucket']==item['bucket']:state['quarantine'].append(entry(r,e.code))
     state['rows']=[r for r in state['rows'] if r['bucket'] not in bad]
     state['calculations']=results;state['business']={'total':sum(r['lower'] for r in results),'upper_total':sum(r['upper'] for r in results),'buckets':len(results),'unit':'客次'};return state

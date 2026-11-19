@@ -1,6 +1,7 @@
 from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime
+from app.quarantine import entry
 ALIASES={'东门':'A','中庭':'B','西门':'C','A':'A','B':'B','C':'C'}
 
 def apply(state):
@@ -24,5 +25,5 @@ def apply(state):
         else:selected.append(sorted(latest,key=lambda r:r['id'])[0])
     badlines={r['_line'] for r,_ in bad}
     state['rows']=[r for r in state['rows'] if r['_line'] not in badlines]
-    for r,c in bad:state['quarantine'].append({'line':r['_line'],'id':r['id'],'code':c,'raw':r['_raw']})
+    for r,c in bad:state['quarantine'].append(entry(r,c))
     state['observations']=selected;return state
